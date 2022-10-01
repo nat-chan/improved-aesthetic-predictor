@@ -1,4 +1,6 @@
 # CLIP+MLP Aesthetic Score Predictor
+UPPER IS BETTER `convert -size 512x512 xc:#95a5a6 dummy.png` score is 4.398580074310303
+
 
 Train, use and visualize an aesthetic score predictor ( how much people like on average an image ) based on a simple neural net that takes CLIP embeddings as inputs.
 
