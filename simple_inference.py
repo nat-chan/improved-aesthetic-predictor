@@ -27,13 +27,8 @@ import clip
 
 from PIL import Image, ImageFile
 
-
-#####  This script will predict the aesthetic score for this image file:
-
-img_path = "test.jpg"
-
-
-
+import argparse
+import sys
 
 
 # if you changed the MLP architecture during training, change it also here:
@@ -102,21 +97,21 @@ model.eval()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 model2, preprocess = clip.load("ViT-L/14", device=device)  #RN50x64   
 
-
-pil_image = Image.open(img_path)
-
-image = preprocess(pil_image).unsqueeze(0).to(device)
-
-
-
-with torch.no_grad():
-   image_features = model2.encode_image(image)
-
-im_emb_arr = normalized(image_features.cpu().detach().numpy() )
-
-prediction = model(torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor))
-
-print( "Aesthetic score predicted by the model:")
-print( prediction )
-
-
+#####  This script will predict the aesthetic score for this image file:
+parser = argparse.ArgumentParser()
+parser.add_argument('--img', type=str, default='')
+args = parser.parse_args()
+if args.img == "":
+    img_paths = [line.strip() for line in sys.stdin]
+else:
+    img_paths = [args.img]
+for img_path in img_paths:
+#    with open(img_path) as f:
+#        pil_image = Image.open(f)
+    pil_image = Image.open(img_path)
+    image = preprocess(pil_image).unsqueeze(0).to(device)
+    with torch.no_grad():
+        image_features = model2.encode_image(image)
+    im_emb_arr = normalized(image_features.cpu().detach().numpy() )
+    prediction = model(torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor))
+    print( float(prediction) )
