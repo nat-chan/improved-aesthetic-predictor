@@ -14,7 +14,7 @@ import torch
 import pytorch_lightning as pl
 import torch.nn as nn
 from torchvision import datasets, transforms
-import tqdm
+from tqdm import tqdm
 
 from os.path import join
 from datasets import load_dataset
@@ -100,18 +100,25 @@ model2, preprocess = clip.load("ViT-L/14", device=device)  #RN50x64
 #####  This script will predict the aesthetic score for this image file:
 parser = argparse.ArgumentParser()
 parser.add_argument('--img', type=str, default='')
+parser.add_argument('--batchsize', type=int, default=1)
+parser.add_argument('--both', type=bool, default=False)
 args = parser.parse_args()
 if args.img == "":
     img_paths = [line.strip() for line in sys.stdin]
 else:
     img_paths = [args.img]
-for img_path in img_paths:
-#    with open(img_path) as f:
-#        pil_image = Image.open(f)
-    pil_image = Image.open(img_path)
-    image = preprocess(pil_image).unsqueeze(0).to(device)
+assert len(img_paths)%args.batchsize == 0
+pbar = tqdm(total=len(img_paths), dynamic_ncols=True)
+for j in range(len(img_paths) // args.batchsize):
+    image = torch.cat([preprocess(Image.open(img_path)).unsqueeze(0).to(device) for img_path in img_paths[j * args.batchsize:(j + 1) * args.batchsize]])
     with torch.no_grad():
         image_features = model2.encode_image(image)
     im_emb_arr = normalized(image_features.cpu().detach().numpy() )
-    prediction = model(torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor))
-    print( float(prediction) )
+    input_tensor = torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor)
+    prediction = model(input_tensor)
+    for i in range(args.batchsize):
+        if args.both:
+            print( float(prediction[i]), img_paths[j * args.batchsize+i])
+        else:
+            print( float(prediction[i]) )
+    pbar.update(n=args.batchsize)
