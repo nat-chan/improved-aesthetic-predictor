@@ -125,10 +125,6 @@ if args.num == 0:
         for i in range(args.batchsize):
             if args.img == "dump":
                 Path(dst_paths[j*args.batchsize+i]).write_text(str(float(prediction[i])))
-                if args.both:
-                    print( float(prediction[i]), img_paths[j*args.batchsize+i])
-                else:
-                    print( float(prediction[i]) )
             else:
                 if args.both:
                     print( float(prediction[i]), img_paths[j*args.batchsize+i])
