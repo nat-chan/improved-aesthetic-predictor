@@ -29,6 +29,7 @@ from PIL import Image, ImageFile
 
 import argparse
 import sys
+from pathlib import Path
 
 
 # if you changed the MLP architecture during training, change it also here:
@@ -108,6 +109,8 @@ args = parser.parse_args()
 if args.num == 0:
     if args.img == "":
         img_paths = [line.strip() for line in sys.stdin]
+    elif args.img == "dump":
+        img_paths, dst_paths = zip(*[line.strip().split() for line in sys.stdin])
     else:
         img_paths = [args.img]
     assert len(img_paths)%args.batchsize == 0
@@ -120,10 +123,17 @@ if args.num == 0:
         input_tensor = torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor)
         prediction = model(input_tensor)
         for i in range(args.batchsize):
-            if args.both:
-                print( float(prediction[i]), img_paths[j * args.batchsize+i])
+            if args.img == "dump":
+                Path(dst_paths[j*args.batchsize+i]).write_text(str(float(prediction[i])))
+                if args.both:
+                    print( float(prediction[i]), img_paths[j*args.batchsize+i])
+                else:
+                    print( float(prediction[i]) )
             else:
-                print( float(prediction[i]) )
+                if args.both:
+                    print( float(prediction[i]), img_paths[j*args.batchsize+i])
+                else:
+                    print( float(prediction[i]) )
         pbar.update(n=args.batchsize)
 else:
     from nokogiri.working_dir import working_dir
