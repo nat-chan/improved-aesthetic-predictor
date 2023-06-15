@@ -103,51 +103,28 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--img', type=str, default='')
 parser.add_argument('--batchsize', type=int, default=1)
 parser.add_argument('--both', type=bool, default=False)
-parser.add_argument('--seed', type=int, default=0)
-parser.add_argument('--num', type=int, default=0)
 args = parser.parse_args()
-if args.num == 0:
-    if args.img == "":
-        img_paths = [line.strip() for line in sys.stdin]
-    elif args.img == "dump":
-        img_paths, dst_paths = zip(*[line.strip().split() for line in sys.stdin])
-    else:
-        img_paths = [args.img]
-    assert len(img_paths)%args.batchsize == 0
-    pbar = tqdm(total=len(img_paths), dynamic_ncols=True)
-    for j in range(len(img_paths) // args.batchsize):
-        image = torch.cat([preprocess(Image.open(img_path)).unsqueeze(0).to(device) for img_path in img_paths[j * args.batchsize:(j + 1) * args.batchsize]])
-        with torch.no_grad():
-            image_features = model2.encode_image(image)
-        im_emb_arr = normalized(image_features.cpu().detach().numpy() )
-        input_tensor = torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor)
-        prediction = model(input_tensor)
-        for i in range(args.batchsize):
-            if args.img == "dump":
-                Path(dst_paths[j*args.batchsize+i]).write_text(str(float(prediction[i])))
-            else:
-                if args.both:
-                    print( float(prediction[i]), img_paths[j*args.batchsize+i])
-                else:
-                    print( float(prediction[i]) )
-        pbar.update(n=args.batchsize)
+if args.img == "":
+    img_paths = [line.strip() for line in sys.stdin]
+elif args.img == "dump":
+    img_paths, dst_paths = zip(*[line.strip().split() for line in sys.stdin])
 else:
-    from nokogiri.working_dir import working_dir
-    with working_dir("/home/natsuki/stylegan2-ada-pytorch"):
-        from script_util import wrap_G
-        G = wrap_G("/data/natsuki/training116/00023-white_yc05_yw04-mirror-auto4-gamma10-noaug/network-snapshot-021800.pkl")
-    assert args.num%args.batchsize == 0
-    pbar = tqdm(total=args.num, dynamic_ncols=True)
-    for j in range(args.num // args.batchsize):
-        image = torch.cat([
-            preprocess(pil_img).unsqueeze(0).to(device)
-            for pil_img in G.synth(G.map(range(args.batchsize*j+args.seed, args.batchsize*(j+1)+args.seed)))
-        ])
-        with torch.no_grad():
-            image_features = model2.encode_image(image)
-        im_emb_arr = normalized(image_features.cpu().detach().numpy() )
-        input_tensor = torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor)
-        prediction = model(input_tensor)
-        for i in range(args.batchsize):
-            print( float(prediction[i]) , args.batchsize*j+args.seed+i)
-        pbar.update(n=args.batchsize)
+    img_paths = [args.img]
+assert len(img_paths)%args.batchsize == 0
+pbar = tqdm(total=len(img_paths), dynamic_ncols=True)
+for j in range(len(img_paths) // args.batchsize):
+    image = torch.cat([preprocess(Image.open(img_path)).unsqueeze(0).to(device) for img_path in img_paths[j * args.batchsize:(j + 1) * args.batchsize]])
+    with torch.no_grad():
+        image_features = model2.encode_image(image)
+    im_emb_arr = normalized(image_features.cpu().detach().numpy() )
+    input_tensor = torch.from_numpy(im_emb_arr).to(device).type(torch.cuda.FloatTensor)
+    prediction = model(input_tensor)
+    for i in range(args.batchsize):
+        if args.img == "dump":
+            Path(dst_paths[j*args.batchsize+i]).write_text(str(float(prediction[i])))
+        else:
+            if args.both:
+                print( float(prediction[i]), img_paths[j*args.batchsize+i])
+            else:
+                print( float(prediction[i]) )
+    pbar.update(n=args.batchsize)
