@@ -11,3 +11,8 @@ pandas
 webdataset
 datasets
 openai-clip
+
+# 2024/01/30 動かなかったので追加
+pillow==10.2.0
+torch==2.1.2
+pytorch-lightning==2.1.3

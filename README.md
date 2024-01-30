@@ -1,4 +1,21 @@
 # CLIP+MLP Aesthetic Score Predictor
+
+## セットアップ手順
+
+```
+pip install -r requirements.txt
+```
+
+## 実行方法
+
+```
+python simple_inference.py --img /path/to/file.png
+```
+標準出力にAesthetic Scoreが書き出される
+
+
+## 以下misc
+
 UPPER IS BETTER `convert -size 512x512 xc:#95a5a6 dummy.png` score is 4.398580074310303
 
 
