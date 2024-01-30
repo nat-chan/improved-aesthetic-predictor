@@ -14,7 +14,7 @@ from pathlib import Path
 
 # if you changed the MLP architecture during training, change it also here:
 class MLP(pl.LightningModule):
-    def __init__(self, input_size, xcol='emb', ycol='avg_rating'):
+    def __init__(self, input_size, xcol="emb", ycol="avg_rating"):
         super().__init__()
         self.input_size = input_size
         self.xcol = xcol
@@ -80,9 +80,9 @@ model2, preprocess = clip.load("ViT-L/14", device=device)  #RN50x64
 
 #####  This script will predict the aesthetic score for this image file:
 parser = argparse.ArgumentParser()
-parser.add_argument('--img', type=str, default='')
-parser.add_argument('--batchsize', type=int, default=1)
-parser.add_argument('--both', type=bool, default=False)
+parser.add_argument("--img", type=str, default="", help="単一の画像を指定する場合はこのオプションを用いる。複数の画像を処理する場合は標準入力から読み込む")
+parser.add_argument("--batchsize", type=int, default=1, help="モデルに入力する際のバッチサイズ")
+parser.add_argument("--both", type=bool, default=False, help="スコアと入力ファイルパスの両方を表示するか")
 args = parser.parse_args()
 if args.img == "":
     img_paths = [line.strip() for line in sys.stdin]
