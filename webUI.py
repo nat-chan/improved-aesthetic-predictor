@@ -80,6 +80,20 @@ with gr.Blocks(title="抽象背景生成", css="footer {visibility: hidden}") as
         inputs=[zip_multi],
         outputs=[text_multi],
     )
+    gr.Markdown("""
+    ## aesthetic scoreって何？
+
+    画像の美的評価を行う指標。人間が画像を見たときに1(悪い)~10(良い)の点数を付ける評価を学習した推定値。
+    CLIP事前学習済みモデルとそのembedingを軽量なMLPモデル(ここだけ重み動かして学習)に通すみたいなアーキテクチャしてるはず。
+    この[実装](https://github.com/nat-chan/improved-aesthetic-predictor)が最適なのかは不明。
+    2年前の実装で自分がイラストドメインで適切に動くことは確認しているが、たぶん今はもっと良い指標が実装付きで出ていると思う。
+
+    ## テスト及び負荷にかかる計測
+
+    画像サイズ850x781、枚数100枚、のアップロード、計算、表示にかかるトータル時間が7秒くらい。
+
+    死んでたらSlackでメンションしてください。
+    """)
 
         
 
